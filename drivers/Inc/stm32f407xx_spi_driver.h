@@ -80,6 +80,14 @@ typedef struct
 #define SPI_SSM_EN 1 /* Software contolled (SSM enable) */
 #define SPI_SSM_DI 0 /* Hardware controlled (SSM disable) */
 
+/****************************************************************************/
+/************************* SPI Releted Status Flags *************************/
+/****************************************************************************/
+
+#define SPI_TXE_FLAG (1 << SPI_SR_TXE)
+#define SPI_RXE_FLAG (1 << SPI_SR_RXNE)
+#define SPI_BUST_FLAG (1 << SPI_SR_BSY)
+
 /*********************************************************************************************
  *								APIs supported by this driver
  *				For more information about the APIs check the function definitions

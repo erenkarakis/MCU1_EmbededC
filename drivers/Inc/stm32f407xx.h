@@ -72,6 +72,8 @@
 #define GPIO_PIN_RESET RESET
 #define HIGH ENABLE
 #define LOW DISABLE
+#define FLAG_RESET RESET
+#define FLAG_SET SET
 
 /* Base addresses of memories */
 #define FLASH_BASEADDR 0x08000000UL
@@ -127,6 +129,49 @@
 #define IRQ_NO_EXTI4 10
 #define IRQ_NO_EXTI9_5 23
 #define IRQ_NO_EXTI15_10 40
+
+/****************************************************************************/
+/**************** Bit position definitions of SPI peripheral ****************/
+/****************************************************************************/
+
+/* Bit position definition SPI_CR1 (Control register 1) */
+
+#define SPI_CR1_CPHA 0		/* Clock phase */
+#define SPI_CR1_CPOL 1		/* Clock polarity */
+#define SPI_CR1_MSTR 2		/* Master selection */
+#define SPI_CR1_BR 3		/* Baud rate */
+#define SPI_CR1_SPE 6		/* SPI enable */
+#define SPI_CR1_LSBFIRST 7	/* Frame format */
+#define SPI_CR1_SSI 8		/* Internal slave select */
+#define SPI_CR1_SSM 9		/* Software slave management */
+#define SPI_CR1_RXONLY 10	/* Receive only */
+#define SPI_CR1_DFF 11		/* Data frame format */
+#define SPI_CR1_CRCNEXT 12	/* CRC transfer next */
+#define SPI_CR1_CRCEN 13	/* Hardware CRC calculation enable */
+#define SPI_CR1_BIDIOE 14	/* Output enable in bidirectional mode */
+#define SPI_CR1_BIDIMODE 15 /* Bidirectional data mode enable */
+
+/* Bit position definition SPI_CR2 (Control register 2) */
+
+#define SPI_CR2_RXDMAEN 0 /* RX buffer DMA enable */
+#define SPI_CR2_TXDMAEN 1 /* TX buffer DMA enable */
+#define SPI_CR2_SSOE 2	  /* SS output enable */
+#define SPI_CR2_FRF 4	  /* Frame format */
+#define SPI_CR2_ERRIE 5	  /* Error interrupt enable */
+#define SPI_CR2_RXNEIE 6  /* RX buffer not empty interrupt enable */
+#define SPI_CR2_TXEIE 7	  /* TX buffer empty interrput enable */
+
+/* Bit position definition SPI_SR (Status register) */
+
+#define SPI_SR_RXNE 0	/* Receive buffer not empty */
+#define SPI_SR_TXE 1	/* Transmit buffer empty */
+#define SPI_SR_CHSIDE 2 /* Channel side */
+#define SPI_SR_UDR 3	/* Underrun flag */
+#define SPI_SR_CRCERR 4 /* CRC error flag */
+#define SPI_SR_MODF 5	/* Mode fault */
+#define SPI_SR_OVR 6	/* Overrun flag */
+#define SPI_SR_BSY 7	/* Busy flag */
+#define SPI_SR_FRE 8	/* Frame format error */
 
 /********************************************* Peripheral register definition structures ********************************************
  * 											 For register addresses check referance manual											*
@@ -417,7 +462,7 @@ typedef struct
 		(RCC->APB1RSTR &= (1 << 15)); \
 	} while (0)
 
-#define SPI1_REG_RESET()              \
+#define SPI4_REG_RESET()              \
 	do                                \
 	{                                 \
 		(RCC->APB2RSTR |= (1 << 13)); \
