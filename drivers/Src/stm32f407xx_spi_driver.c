@@ -71,7 +71,7 @@ void SPI_PeriClockControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
  *
  * @returns				none
  *
- * @note				none
+ * @note				This function doesn't enable the SPI. Use SPI_PeripheralControl function to enable
  *
  */
 void SPI_Init(SPI_Handle_t *pSPIHandle)
@@ -79,36 +79,39 @@ void SPI_Init(SPI_Handle_t *pSPIHandle)
     /* Configuring SPI_CR1 register */
     uint32_t temp = 0;
 
+    /* Enable the peripheral clock */
+    SPI_PeriClockControl(pSPIHandle->pSPIx, ENABLE);
+
     /* Configuring device mode */
-    temp |= pSPIHandle->SPIConfig.SPI_DeviceMode << 2;
+    temp |= pSPIHandle->SPIConfig.SPI_DeviceMode << SPI_CR1_MSTR;
 
     /* Configuring bus config */
     if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_FD)
     {
         /* Bi-directional mode should be cleared */
-        temp &= ~(1 << 15);
+        temp &= ~(1 << SPI_CR1_BIDIMODE);
     }
     else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_HD)
     {
         /* Bi-directional mode should be set */
-        temp |= (1 << 15);
+        temp |= (1 << SPI_CR1_BIDIMODE);
     }
     else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_SIMPLEX_RXONLY)
     {
         /* Bi-directional mode should be cleared */
-        temp &= ~(1 << 15);
+        temp &= ~(1 << SPI_CR1_BIDIMODE);
         /* RXONLY must be set */
-        temp |= (1 << 10);
+        temp |= (1 << SPI_CR1_RXONLY);
     }
 
     /* Configring the SPI serial clock speed (baud rate) */
-    temp |= pSPIHandle->SPIConfig.SPI_SCLKSpeed << 3;
+    temp |= pSPIHandle->SPIConfig.SPI_SCLKSpeed << SPI_CR1_BR;
 
     /* Configuring the DFF */
-    temp |= pSPIHandle->SPIConfig.SPI_DFF << 11;
+    temp |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
 
     /* Configuring the CPOL */
-    temp |= pSPIHandle->SPIConfig.SPI_CPOL << 1;
+    temp |= pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL;
 
     /* Configuring the CPHA */
     temp |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
@@ -121,7 +124,7 @@ void SPI_Init(SPI_Handle_t *pSPIHandle)
  *
  * @brief				This function de-initializes the SPI
  *
- * @param pSPIx		base address of the spi peripheral
+ * @param pSPIx		    base address of the spi peripheral
  *
  * @returns				none
  *
@@ -211,5 +214,42 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len)
             Len--;
             pTxBuffer++;
         }
+    }
+}
+
+/***************************************************************
+ * @fn					SPI_PeripheralControl
+ *
+ * @brief				This function de-initializes the SPI
+ *
+ * @param pSPIx		    base address of the spi peripheral
+ * @param EnOrDi	    ENABLE or DISABLE macros
+ *
+ * @returns				none
+ *
+ * @note				none
+ *
+ */
+void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+    if (EnOrDi == ENABLE)
+    {
+        pSPIx->CR1 |= (1 << SPI_CR1_SPE);
+    }
+    else if (EnOrDi == DISABLE)
+    {
+        pSPIx->CR1 &= ~(1 << SPI_CR1_SPE);
+    }
+}
+
+void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+    if (EnOrDi == ENABLE)
+    {
+        pSPIx->CR1 |= (1 << SPI_CR1_SSI);
+    }
+    else if (EnOrDi == DISABLE)
+    {
+        pSPIx->CR1 &= ~(1 << SPI_CR1_SSI);
     }
 }
