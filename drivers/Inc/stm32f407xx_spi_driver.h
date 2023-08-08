@@ -86,7 +86,7 @@ typedef struct
 
 #define SPI_TXE_FLAG (1 << SPI_SR_TXE)
 #define SPI_RXE_FLAG (1 << SPI_SR_RXNE)
-#define SPI_BUST_FLAG (1 << SPI_SR_BSY)
+#define SPI_BUSY_FLAG (1 << SPI_SR_BSY)
 
 /*********************************************************************************************
  *								APIs supported by this driver
@@ -116,6 +116,8 @@ void SPI_IRQHandling(SPI_Handle_t *pHandle);
 /************************* Other Pripheral Control APIs *************************/
 
 void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
+uint8_t SPI_GetFlagStatus(SPI_RegDef_t *pSPIx, uint32_t FlagName);
 void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
+void SPI_SSOEConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
 
 #endif /* INC_STM32F407XX_SPI_DRIVER_H_ */

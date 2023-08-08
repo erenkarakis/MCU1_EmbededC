@@ -242,6 +242,19 @@ void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
     }
 }
 
+/***************************************************************
+ * @fn					SPI_SSIConfig
+ *
+ * @brief				This function configures the SSI
+ *
+ * @param pSPIx		    base address of the spi peripheral
+ * @param EnOrDi	    ENABLE or DISABLE macros
+ *
+ * @returns				none
+ *
+ * @note				none
+ *
+ */
 void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 {
     if (EnOrDi == ENABLE)
@@ -251,5 +264,30 @@ void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
     else if (EnOrDi == DISABLE)
     {
         pSPIx->CR1 &= ~(1 << SPI_CR1_SSI);
+    }
+}
+
+/***************************************************************
+ * @fn					SPI_SSOEConfig
+ *
+ * @brief				This function configures the SSOE
+ *
+ * @param pSPIx		    base address of the spi peripheral
+ * @param EnOrDi	    ENABLE or DISABLE macros
+ *
+ * @returns				none
+ *
+ * @note				none
+ *
+ */
+void SPI_SSOEConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+    if (EnOrDi == ENABLE)
+    {
+        pSPIx->CR2 |= (1 << SPI_CR2_SSOE);
+    }
+    else if (EnOrDi == DISABLE)
+    {
+        pSPIx->CR2 &= ~(1 << SPI_CR2_SSOE);
     }
 }
