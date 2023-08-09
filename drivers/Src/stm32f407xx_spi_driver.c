@@ -215,6 +215,7 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len)
             pTxBuffer++;
         }
     }
+    pSPIx->SR &= ~(1 << SPI_SR_OVR);
 }
 
 /***************************************************************
@@ -248,15 +249,16 @@ void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len)
             Len -= 2;
             (uint16_t *)pRxBuffer++;
         }
-        else if (!(pSPIx->CR1 & (1 << SPI_CR1_DFF)))
+        else
         {
             /* 8 bit DFF */
             /* Load the data in to the DR (Data register) */
-            pRxBuffer = pSPIx->DR;
+            *pRxBuffer = pSPIx->DR;
             Len--;
             pRxBuffer++;
         }
     }
+    pSPIx->SR &= ~(1 << SPI_SR_OVR);
 }
 
 /***************************************************************
