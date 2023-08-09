@@ -218,6 +218,48 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len)
 }
 
 /***************************************************************
+ * @fn					SPI_ReceiveData
+ *
+ * @brief				This function de-initializes the SPI
+ *
+ * @param pSPIx		    base address of the spi peripheral
+ * @param pTxBuffer
+ * @param Len           number of bytes to transmit
+ *
+ * @returns				none
+ *
+ * @note				This is a blocking call
+ *
+ */
+void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len)
+{
+    while (Len > 0)
+    {
+        /* Wait until RXNE set */
+        while (SPI_GetFlagStatus(pSPIx, SPI_RXNE_FLAG) == FLAG_RESET)
+            ;
+
+        /* Check the DFF bit in CR1 */
+        if (pSPIx->CR1 & (1 << SPI_CR1_DFF))
+        {
+            /* 16 bit DFF */
+            /* Load the data from DR to the RXBuffer address */
+            *((uint16_t *)pRxBuffer) = pSPIx->DR;
+            Len -= 2;
+            (uint16_t *)pRxBuffer++;
+        }
+        else if (!(pSPIx->CR1 & (1 << SPI_CR1_DFF)))
+        {
+            /* 8 bit DFF */
+            /* Load the data in to the DR (Data register) */
+            pRxBuffer = pSPIx->DR;
+            Len--;
+            pRxBuffer++;
+        }
+    }
+}
+
+/***************************************************************
  * @fn					SPI_PeripheralControl
  *
  * @brief				This function de-initializes the SPI
