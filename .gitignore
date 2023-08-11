@@ -2,3 +2,5 @@
 .cproject
 .project
 Debug
+stm32f4xx_drivers Debug.cfg
+stm32f4xx_drivers Debug.launch

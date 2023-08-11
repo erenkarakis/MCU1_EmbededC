@@ -6,7 +6,7 @@
  */
 
 #include "stm32f407xx.h"
-
+#include <stdio.h>
 #include <string.h>
 
 /*
@@ -16,6 +16,8 @@
  * PB12 --> SPI2_NSS
  * ALT function mode : 5
  */
+
+extern void initialise_monitor_handles();
 
 #define COMMAND_LED_CTRL 0x50
 #define COMMAND_SENSOR_READ 0x51
@@ -114,6 +116,8 @@ int main(void)
     uint8_t dummy_write = 0xff;
     uint8_t dummy_read;
 
+    initialise_monitor_handles();
+
     GPIO_ButtonInit();
 
     // this function is used to initialize the GPIO pins to behave as SPI2 pins
@@ -145,6 +149,8 @@ int main(void)
 
     GPIOLed.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_12;
     GPIO_Init(&GPIOLed);
+
+    printf("Everything initlialized!\n");
 
     while (1)
     {
@@ -190,6 +196,7 @@ int main(void)
             // dummy read
             SPI_ReceiveData(SPI2, &dummy_read, 1);
             GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_15);
+            printf("COMMAND_LED_CTRL initialized.\n");
         }
 
         while (!GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0))
@@ -222,19 +229,20 @@ int main(void)
             SPI_SendData(SPI2, &args[0], 1);
             // dummy read
             SPI_ReceiveData(SPI2, &dummy_read, 1);
-        }
 
-        delay();
+            delay();
 
-        // Send some dummy bits (1 byte) fetch the response from the slave
-        SPI_SendData(SPI2, &dummy_write, 1);
+            // Send some dummy bits (1 byte) fetch the response from the slave
+            SPI_SendData(SPI2, &dummy_write, 1);
 
-        uint8_t analog_read;
-        SPI_ReceiveData(SPI2, &analog_read, 1);
+            uint8_t analog_read;
+            SPI_ReceiveData(SPI2, &analog_read, 1);
+            printf("COMMAND_SENSOR_READ: %d\n", analog_read);
 
-        if (analog_read == 0)
-        {
-            GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_12);
+            if (analog_read == 0)
+            {
+                GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_12);
+            }
         }
 
         // lets confirm SPI is not busy
@@ -243,6 +251,7 @@ int main(void)
 
         // Disable the SPI2 peripheral
         SPI_PeripheralControl(SPI2, DISABLE);
+        printf("SPI communication closed.\n");
     }
 
     return 0;
