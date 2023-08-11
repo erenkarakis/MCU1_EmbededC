@@ -215,7 +215,7 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len)
             pTxBuffer++;
         }
     }
-    pSPIx->SR &= ~(1 << SPI_SR_OVR);
+    // pSPIx->SR &= ~(1 << SPI_SR_OVR);
 }
 
 /***************************************************************
@@ -258,7 +258,7 @@ void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len)
             pRxBuffer++;
         }
     }
-    pSPIx->SR &= ~(1 << SPI_SR_OVR);
+    // pSPIx->SR &= ~(1 << SPI_SR_OVR);
 }
 
 /***************************************************************

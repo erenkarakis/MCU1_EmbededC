@@ -143,6 +143,9 @@ int main(void)
     GPIOLed.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
     GPIO_Init(&GPIOLed);
 
+    GPIOLed.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_12;
+    GPIO_Init(&GPIOLed);
+
     while (1)
     {
         // wait till button is pressed
@@ -183,8 +186,55 @@ int main(void)
 
             // send arguments
             SPI_SendData(SPI2, args, 2);
+            GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_13);
             // dummy read
-            SPI_ReceiveData(SPI2, args, 2);
+            SPI_ReceiveData(SPI2, &dummy_read, 1);
+            GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_15);
+        }
+
+        while (!GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0))
+            ;
+
+        GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_12);
+
+        // to avoid button de-bouncing related issues 200ms of delay
+        delay();
+
+        commandcode = COMMAND_SENSOR_READ;
+
+        // send command
+        SPI_SendData(SPI2, &commandcode, 1);
+
+        // do dummy read to clear off the RXNE
+        SPI_ReceiveData(SPI2, &dummy_read, 1);
+
+        // Send some dummy bits (1 byte) fetch the response from the slave
+        SPI_SendData(SPI2, &dummy_write, 1);
+
+        // read the ack byte received
+        SPI_ReceiveData(SPI2, &ackbyte, 1);
+
+        if (SPI_VerifyResponse(ackbyte))
+        {
+            args[0] = ANALOG_PIN0;
+
+            // send arguments
+            SPI_SendData(SPI2, &args[0], 1);
+            // dummy read
+            SPI_ReceiveData(SPI2, &dummy_read, 1);
+        }
+
+        delay();
+
+        // Send some dummy bits (1 byte) fetch the response from the slave
+        SPI_SendData(SPI2, &dummy_write, 1);
+
+        uint8_t analog_read;
+        SPI_ReceiveData(SPI2, &analog_read, 1);
+
+        if (analog_read == 0)
+        {
+            GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_12);
         }
 
         // lets confirm SPI is not busy
@@ -193,9 +243,6 @@ int main(void)
 
         // Disable the SPI2 peripheral
         SPI_PeripheralControl(SPI2, DISABLE);
-
-        GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_13);
-        GPIO_ToggleOutputPin(GPIOLed.pGPIOx, GPIO_PIN_NO_15);
     }
 
     return 0;
