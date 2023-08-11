@@ -6,6 +6,11 @@
  */
 
 #include "stm32f407xx_spi_driver.h"
+#include <stddef.h>
+
+static void spi_txe_interrupt_handle(SPI_Handle_t *pSPIHandle);
+static void spi_rxne_interrupt_handle(SPI_Handle_t *pSPIHandle);
+static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle);
 
 /***************************************************************
  * @fn				SPI_PeriClockControl
@@ -215,7 +220,6 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len)
             pTxBuffer++;
         }
     }
-    // pSPIx->SR &= ~(1 << SPI_SR_OVR);
 }
 
 /***************************************************************
@@ -258,7 +262,6 @@ void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len)
             pRxBuffer++;
         }
     }
-    // pSPIx->SR &= ~(1 << SPI_SR_OVR);
 }
 
 /***************************************************************
@@ -334,4 +337,234 @@ void SPI_SSOEConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
     {
         pSPIx->CR2 &= ~(1 << SPI_CR2_SSOE);
     }
+}
+
+void SPI_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnOrDi)
+{
+    if (EnOrDi == ENABLE)
+    {
+        if (IRQNumber <= 31)
+        {
+            /* Program ISER0 register */
+            *NVIC_ISER0_PTR |= (1 << IRQNumber);
+        }
+        else if (IRQNumber > 31 && IRQNumber < 64)
+        {
+            /* Program ISER1 register */
+            *NVIC_ISER1_PTR |= (1 << (IRQNumber % 32));
+        }
+        else if (IRQNumber >= 64 && IRQNumber < 96)
+        {
+            /* Program ISER2 register */
+            *NVIC_ISER2_PTR |= (1 << (IRQNumber % 64));
+        }
+    }
+    else if (EnOrDi == DISABLE)
+    {
+        if (IRQNumber <= 31)
+        {
+            /* Program ICER0 register */
+            *NVIC_ICER0_PTR |= (1 << IRQNumber);
+        }
+        else if (IRQNumber > 31 && IRQNumber < 64)
+        {
+            /* Program ICER1 register */
+            *NVIC_ICER1_PTR |= (1 << (IRQNumber % 32));
+        }
+        else if (IRQNumber >= 64 && IRQNumber < 96)
+        {
+            /* Program ICER2 register */
+            *NVIC_ICER2_PTR |= (1 << (IRQNumber % 64));
+        }
+    }
+}
+
+void SPI_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority)
+{
+    /* Finding the Input Priority Register(IPR) */
+    uint8_t IPRx = IRQNumber / 4;
+    uint8_t IPRxSection = IRQNumber % 4;
+
+    uint8_t shift_amount = (8 * IPRxSection) + (8 - NVIC_NO_PR_BITS_IMPLEMENTED);
+    *(NVIC_IPR_BASEADDR_PTR + (IPRx * 4)) |= (IRQPriority << shift_amount);
+}
+
+uint8_t SPI_SendDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t Len)
+{
+    uint8_t state = pSPIHandle->TxState;
+
+    if (state != SPI_BUSY_IN_TX)
+    {
+        /* Save the Tx buffer address and Len information in some global variables */
+        pSPIHandle->pTxBuffer = pTxBuffer;
+        pSPIHandle->TxLen = Len;
+
+        /* Mark the SPI state as busy in transmision so other code can't take over same SPI periph. until transmission is over */
+        pSPIHandle->TxState = SPI_BUSY_IN_TX;
+
+        /* Enable the TXEIE ( Tx buffer empty interrupt enable ) */
+        pSPIHandle->pSPIx->CR2 |= (1 << SPI_CR2_TXEIE);
+
+        /* Data transmission will be handled by the ISR (Interrupt Service Routine) code (will implement later) */
+    }
+    return state;
+}
+
+uint8_t SPI_ReceiveDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t Len)
+{
+    uint8_t state = pSPIHandle->TxState;
+
+    if (state != SPI_BUSY_IN_RX)
+    {
+        /* Save the Rx buffer address and Len information in some global variables */
+        pSPIHandle->pRxBuffer = pRxBuffer;
+        pSPIHandle->RxLen = Len;
+
+        /* Mark the SPI state as busy in transmision so other code can't take over same SPI periph. until transmission is over */
+        pSPIHandle->RxState = SPI_BUSY_IN_RX;
+
+        /* Enable the RXNEIE ( RX buffer not empty interrupt enable ) */
+        pSPIHandle->pSPIx->CR2 |= (1 << SPI_CR2_RXNEIE);
+
+        /* Data transmission will be handled by the ISR (Interrupt Service Routine) code (will implement later) */
+    }
+    return state;
+}
+
+void SPI_IRQHandling(SPI_Handle_t *pHandle)
+{
+    uint8_t test_sr, test_cr2;
+
+    /* Check for TXE */
+    test_sr = pHandle->pSPIx->SR & (1 << SPI_SR_TXE);
+    test_cr2 = pHandle->pSPIx->CR2 & (1 << SPI_CR2_TXEIE);
+
+    if (test_sr && test_cr2)
+    {
+        /* Handle TXE */
+        spi_txe_interrupt_handle(pHandle);
+    }
+
+    /* Check for RXNE */
+    test_sr = pHandle->pSPIx->SR & (1 << SPI_SR_RXNE);
+    test_cr2 = pHandle->pSPIx->CR2 & (1 << SPI_CR2_RXNEIE);
+
+    if (test_sr && test_cr2)
+    {
+        /* Handle RXNE */
+        spi_rxne_interrupt_handle(pHandle);
+    }
+
+    /* Check for OVR flag */
+    test_sr = pHandle->pSPIx->SR & (1 << SPI_SR_OVR);
+    test_cr2 = pHandle->pSPIx->CR2 & (1 << SPI_CR2_ERRIE);
+
+    if (test_sr && test_cr2)
+    {
+        /* Handle OVR */
+        spi_ovr_err_interrupt_handle(pHandle);
+    }
+}
+
+/*****************************************************************************/
+/********************** Helper function implementations **********************/
+/****************************************************************************/
+
+static void spi_txe_interrupt_handle(SPI_Handle_t *pSPIHandle)
+{
+    /* Check the DFF bit in CR1 */
+    if (pSPIHandle->pSPIx->CR1 & (1 << SPI_CR1_DFF))
+    {
+        /* 16 bit DFF */
+        /* Load the data in to the DR (Data register) */
+        pSPIHandle->pSPIx->DR = *((uint16_t *)pSPIHandle->pTxBuffer);
+        pSPIHandle->TxLen -= 2;
+        (uint16_t *)pSPIHandle->pTxBuffer++;
+    }
+    else if (!(pSPIHandle->pSPIx->CR1 & (1 << SPI_CR1_DFF)))
+    {
+        /* 8 bit DFF */
+        /* Load the data in to the DR (Data register) */
+        pSPIHandle->pSPIx->DR = *pSPIHandle->pTxBuffer;
+        pSPIHandle->TxLen--;
+        pSPIHandle->pTxBuffer++;
+    }
+
+    if (!pSPIHandle->TxLen)
+    {
+        /* TxLen is zero, so close the SPI communication and inform the application that Tx is over */
+        SPI_CloseTransmission(pSPIHandle);
+        SPI_ApplicationEventCallback(pSPIHandle, SPI_EVENT_TX_CMPLT);
+    }
+}
+
+static void spi_rxne_interrupt_handle(SPI_Handle_t *pSPIHandle)
+{
+    /* Check the DFF bit in CR1 */
+    if (pSPIHandle->pSPIx->CR1 & (1 << SPI_CR1_DFF))
+    {
+        /* 16 bit DFF */
+        /* Load the data from DR to the RXBuffer address */
+        *((uint16_t *)pSPIHandle->pRxBuffer) = pSPIHandle->pSPIx->DR;
+        pSPIHandle->RxLen -= 2;
+        (uint16_t *)pSPIHandle->pRxBuffer++;
+    }
+    else
+    {
+        /* 8 bit DFF */
+        /* Load the data in to the DR (Data register) */
+        *pSPIHandle->pRxBuffer = pSPIHandle->pSPIx->DR;
+        pSPIHandle->RxLen--;
+        pSPIHandle->pRxBuffer++;
+    }
+
+    if (!pSPIHandle->RxLen)
+    {
+        /* RxLen is zero, so close the SPI communication and inform the application that Rx is over */
+        SPI_CloseReception(pSPIHandle);
+        SPI_ApplicationEventCallback(pSPIHandle, SPI_EVENT_RX_CMPLT);
+    }
+}
+
+static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle)
+{
+    uint8_t temp;
+    /* Clear the overrun flag */
+    if (pSPIHandle->TxState != SPI_BUSY_IN_TX)
+    {
+        temp = pSPIHandle->pSPIx->DR;
+        temp = pSPIHandle->pSPIx->SR;
+    }
+    (void)temp;
+    /* Inform the application */
+    SPI_ApplicationEventCallback(pSPIHandle, SPI_EVENT_OVR_ERR);
+}
+
+void SPI_CloseTransmission(SPI_Handle_t *pSPIHandle)
+{
+    pSPIHandle->pSPIx->CR2 &= ~(1 << SPI_CR2_TXEIE);
+    pSPIHandle->pTxBuffer = NULL;
+    pSPIHandle->TxLen = 0;
+    pSPIHandle->TxState = SPI_READY;
+}
+
+void SPI_CloseReception(SPI_Handle_t *pSPIHandle)
+{
+    pSPIHandle->pSPIx->CR2 &= (1 << SPI_CR2_RXNEIE);
+    pSPIHandle->pRxBuffer = NULL;
+    pSPIHandle->RxLen = 0;
+    pSPIHandle->RxState = SPI_READY;
+}
+
+void SPI_ClearOVRFlag(SPI_RegDef_t *pSPIx)
+{
+    uint8_t temp;
+    temp = pSPIx->DR;
+    temp = pSPIx->SR;
+    (void)temp;
+}
+
+__weak void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle, uint8_t AppEv)
+{
+    /* This is a weak implementation. The application may override this function. */
 }
