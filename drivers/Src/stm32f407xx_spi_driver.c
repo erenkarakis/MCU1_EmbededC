@@ -412,7 +412,7 @@ uint8_t SPI_SendDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t Le
 
 uint8_t SPI_ReceiveDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t Len)
 {
-    uint8_t state = pSPIHandle->TxState;
+    uint8_t state = pSPIHandle->RxState;
 
     if (state != SPI_BUSY_IN_RX)
     {
@@ -550,7 +550,7 @@ void SPI_CloseTransmission(SPI_Handle_t *pSPIHandle)
 
 void SPI_CloseReception(SPI_Handle_t *pSPIHandle)
 {
-    pSPIHandle->pSPIx->CR2 &= (1 << SPI_CR2_RXNEIE);
+    pSPIHandle->pSPIx->CR2 &= ~(1 << SPI_CR2_RXNEIE);
     pSPIHandle->pRxBuffer = NULL;
     pSPIHandle->RxLen = 0;
     pSPIHandle->RxState = SPI_READY;

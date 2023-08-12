@@ -12,7 +12,7 @@
 
 #include <SPI.h>
 
-#define PendingMessagePin 9
+#define PendingMessagePin 8
 #define MAX_LEN 255
 
 bool bIsCompleteMessage = false;
@@ -51,14 +51,7 @@ void SPI_SlaveTransmit(uint8_t data)
 
   /* Wait for transmission complete */
   /* When a serial transfer is complete, the SPIF Flag is set */
-  while(!(SPDR & (1 << SPIF)));
-}
-
-void NotifyMaster()
-{
-  digitalWrite(PendingMessagePin, HIGH);
-  delayMicroseconds(50);
-  digitalWrite(PendingMessagePin, LOW);
+  while(!(SPSR & (1 << SPIF)));
 }
 
 void setup() {
@@ -70,8 +63,17 @@ void setup() {
   Serial.println("Slave initalized");
 }
 
+void NotifyMaster()
+{
+  digitalWrite(PendingMessagePin, HIGH);
+  delayMicroseconds(50);
+  digitalWrite(PendingMessagePin, LOW);
+}
+
+
 void loop() {
   
+  uint8_t dummy_read;
 
   Serial.println("Type anything and press \"Send\"");
   while(!bIsCompleteMessage)
@@ -90,13 +92,13 @@ void loop() {
     }
   }
 
-  NotifyMaster();
-
   Serial.println("Your message: ");
   Serial.println((char*)dataBuffer);
 
+  NotifyMaster();
+
   /* Transmit all the data inside buffer over SPI */
-  for (uint16_t i = 0; i < cursor; i++)
+  for (uint32_t i = 0; i < cursor; i++)
   {
     SPI_SlaveTransmit(dataBuffer[i]);
   }
