@@ -134,49 +134,6 @@
 #define IRQ_NO_SPI2 36
 #define IRQ_NO_SPI3 51
 
-/****************************************************************************/
-/**************** Bit position definitions of SPI peripheral ****************/
-/****************************************************************************/
-
-/* Bit position definition SPI_CR1 (Control register 1) */
-
-#define SPI_CR1_CPHA 0		/* Clock phase */
-#define SPI_CR1_CPOL 1		/* Clock polarity */
-#define SPI_CR1_MSTR 2		/* Master selection */
-#define SPI_CR1_BR 3		/* Baud rate */
-#define SPI_CR1_SPE 6		/* SPI enable */
-#define SPI_CR1_LSBFIRST 7	/* Frame format */
-#define SPI_CR1_SSI 8		/* Internal slave select */
-#define SPI_CR1_SSM 9		/* Software slave management */
-#define SPI_CR1_RXONLY 10	/* Receive only */
-#define SPI_CR1_DFF 11		/* Data frame format */
-#define SPI_CR1_CRCNEXT 12	/* CRC transfer next */
-#define SPI_CR1_CRCEN 13	/* Hardware CRC calculation enable */
-#define SPI_CR1_BIDIOE 14	/* Output enable in bidirectional mode */
-#define SPI_CR1_BIDIMODE 15 /* Bidirectional data mode enable */
-
-/* Bit position definition SPI_CR2 (Control register 2) */
-
-#define SPI_CR2_RXDMAEN 0 /* RX buffer DMA enable */
-#define SPI_CR2_TXDMAEN 1 /* TX buffer DMA enable */
-#define SPI_CR2_SSOE 2	  /* SS output enable */
-#define SPI_CR2_FRF 4	  /* Frame format */
-#define SPI_CR2_ERRIE 5	  /* Error interrupt enable */
-#define SPI_CR2_RXNEIE 6  /* RX buffer not empty interrupt enable */
-#define SPI_CR2_TXEIE 7	  /* TX buffer empty interrput enable */
-
-/* Bit position definition SPI_SR (Status register) */
-
-#define SPI_SR_RXNE 0	/* Receive buffer not empty */
-#define SPI_SR_TXE 1	/* Transmit buffer empty */
-#define SPI_SR_CHSIDE 2 /* Channel side */
-#define SPI_SR_UDR 3	/* Underrun flag */
-#define SPI_SR_CRCERR 4 /* CRC error flag */
-#define SPI_SR_MODF 5	/* Mode fault */
-#define SPI_SR_OVR 6	/* Overrun flag */
-#define SPI_SR_BSY 7	/* Busy flag */
-#define SPI_SR_FRE 8	/* Frame format error */
-
 /********************************************* Peripheral register definition structures ********************************************
  * 											 For register addresses check referance manual											*
  *************************************************************************************************************************************/
@@ -271,6 +228,22 @@ typedef struct
 	__vo uint32_t I2SPR;   /* SPI_I2S prescaler register (SPI_I2SPR) */
 } SPI_RegDef_t;
 
+/* I2C (Inter Integrated Circuit) register definition */
+typedef struct
+{
+	__vo uint32_t CR1;	 /* I2C Control register 1 (I2C_CR1) */
+	__vo uint32_t CR2;	 /* I2C Control register 2 (I2C_CR2) */
+	__vo uint32_t OAR1;	 /* I2C Own address register 1 (I2C_OAR1) */
+	__vo uint32_t OAR2;	 /* I2C Own address register 2 (I2C_OAR2) */
+	__vo uint32_t DR;	 /* I2C Data register (I2C_DR) */
+	__vo uint32_t SR1;	 /* I2C Status register 1 (I2C_SR1) */
+	__vo uint32_t SR2;	 /* I2C Status register 2 (I2C_SR2) */
+	__vo uint32_t CCR;	 /* I2C Clock control register (I2C_CCR) */
+	__vo uint32_t TRISE; /* I2C TRISE register (I2C_TRISE) */
+	__vo uint32_t FLTR;	 /* I2C FLTR register (I2C_FLTR) */
+
+} I2C_RegDef_t;
+
 /* Peripheral definitions (Peripheral base addresses typecasted to xxx_RegDef_t) */
 
 #define GPIOA ((GPIO_RegDef_t *)GPIOA_BASEADDR)
@@ -293,6 +266,121 @@ typedef struct
 #define SPI2 ((SPI_RegDef_t *)SPI2_BASEADDR)
 #define SPI3 ((SPI_RegDef_t *)SPI3_BASEADDR)
 #define SPI4 ((SPI_RegDef_t *)SPI4_BASEADDR)
+
+#define I2C1 ((I2C_RegDef_t *)I2C1_BASEADDR)
+#define I2C2 ((I2C_RegDef_t *)I2C2_BASEADDR)
+#define I2C3 ((I2C_RegDef_t *)I2C3_BASEADDR)
+
+/********************************************* Bit position definitions of peripherals ***********************************************
+ * 											     For details check referance manual											         *
+ *************************************************************************************************************************************/
+
+/****************************************************************************/
+/**************** Bit position definitions of SPI peripheral ****************/
+/****************************************************************************/
+
+/* Bit position definition SPI_CR1 (Control register 1) */
+
+#define SPI_CR1_CPHA 0		/* Clock phase */
+#define SPI_CR1_CPOL 1		/* Clock polarity */
+#define SPI_CR1_MSTR 2		/* Master selection */
+#define SPI_CR1_BR 3		/* Baud rate */
+#define SPI_CR1_SPE 6		/* SPI enable */
+#define SPI_CR1_LSBFIRST 7	/* Frame format */
+#define SPI_CR1_SSI 8		/* Internal slave select */
+#define SPI_CR1_SSM 9		/* Software slave management */
+#define SPI_CR1_RXONLY 10	/* Receive only */
+#define SPI_CR1_DFF 11		/* Data frame format */
+#define SPI_CR1_CRCNEXT 12	/* CRC transfer next */
+#define SPI_CR1_CRCEN 13	/* Hardware CRC calculation enable */
+#define SPI_CR1_BIDIOE 14	/* Output enable in bidirectional mode */
+#define SPI_CR1_BIDIMODE 15 /* Bidirectional data mode enable */
+
+/* Bit position definition SPI_CR2 (Control register 2) */
+
+#define SPI_CR2_RXDMAEN 0 /* RX buffer DMA enable */
+#define SPI_CR2_TXDMAEN 1 /* TX buffer DMA enable */
+#define SPI_CR2_SSOE 2	  /* SS output enable */
+#define SPI_CR2_FRF 4	  /* Frame format */
+#define SPI_CR2_ERRIE 5	  /* Error interrupt enable */
+#define SPI_CR2_RXNEIE 6  /* RX buffer not empty interrupt enable */
+#define SPI_CR2_TXEIE 7	  /* TX buffer empty interrput enable */
+
+/* Bit position definition SPI_SR (Status register) */
+
+#define SPI_SR_RXNE 0	/* Receive buffer not empty */
+#define SPI_SR_TXE 1	/* Transmit buffer empty */
+#define SPI_SR_CHSIDE 2 /* Channel side */
+#define SPI_SR_UDR 3	/* Underrun flag */
+#define SPI_SR_CRCERR 4 /* CRC error flag */
+#define SPI_SR_MODF 5	/* Mode fault */
+#define SPI_SR_OVR 6	/* Overrun flag */
+#define SPI_SR_BSY 7	/* Busy flag */
+#define SPI_SR_FRE 8	/* Frame format error */
+
+/****************************************************************************/
+/**************** Bit position definitions of I2C peripheral ****************/
+/****************************************************************************/
+
+/* Bit position definiton I2C_CR1 */
+
+#define I2C_CR1_PE 0		/* Peripheral enable */
+#define I2C_CR1_SMBUS 1		/* SMBus mode */
+#define I2C_CR1_SMBTYPE 3	/* SMBus type */
+#define I2C_CR1_ENARP 4		/* ARP enable */
+#define I2C_CR1_ENPEC 5		/* PEC enable */
+#define I2C_CR1_ENGC 6		/* General call enable */
+#define I2C_CR1_NOSTRETCH 7 /*  Clock stretching disable (Slave mode) */
+#define I2C_CR1_START 8		/* Start generation */
+#define I2C_CR1_STOP 9		/* Stop generation */
+#define I2C_CR1_ACK 10		/* Acknowledge enbale */
+#define I2C_CR1_POS 11		/* Acknowledge/PEC Position (for data reception) */
+#define I2C_CR1_PEC 12		/* Packet error checking */
+#define I2C_CR1_ALERT 13	/* SMBus alert */
+#define I2C_CR1_SWRST 15	/* Software reset */
+
+/* Bit position definiton I2C_CR2 */
+
+#define I2C_CR2_FREQ 0	   /* Peripheral clock frequency */
+#define I2C_CR2_ITERREN 8  /* Error interrupt enable */
+#define I2C_CR2_ITEVTEN 9  /* Event interrupt enbale */
+#define I2C_CR2_ITBUFEN 10 /* Buffer interrupt enable */
+#define I2C_CR2_DMAEN 11   /* DMA requests enbale */
+#define I2C_CR2_LAST 12	   /* DMA last transfer */
+
+/* Bit position definition I2C_SR1 */
+
+#define I2C_SR1_SB 0		/* Start bit (Master mode) */
+#define I2C_SR1_ADDR 1		/* Address sent (master mode)/matched (slave mode) */
+#define I2C_SR1_BTF 2		/* Byte transfer finished */
+#define I2C_SR1_ADD10 3		/* 10-bit header sent (Master mode) */
+#define I2C_SR1_STOPF 4		/* Stop detection (Slave mode) */
+#define I2C_SR1_RxNE 6		/* Data register not empty (receivers) */
+#define I2C_SR1_TxE 7		/* Data register empty (transmitters) */
+#define I2C_SR1_BERR 8		/* Bus error */
+#define I2C_SR1_ARLO 9		/* Arbitration lost (master mode) */
+#define I2C_SR1_AF 10		/* Acknowledge failure */
+#define I2C_SR1_OVR 11		/* Overrun/Underrun */
+#define I2C_SR1_PECERR 12	/* PEC error in reception */
+#define I2C_SR1_TIMEOUT 14	/* Timeout or Tlow error */
+#define I2C_SR1_AMBALERT 15 /* SMBus alert */
+
+/* Bit position definition I2C_SR2 */
+
+#define I2C_SR2_MSL 0		 /* Master/slave */
+#define I2C_SR2_BUSY 1		 /* Bus busy */
+#define I2C_SR2_TRA 2		 /* Transmitter/receiver */
+#define I2C_SR2_GENCALL 4	 /* General call address (Slave mode) */
+#define I2C_SR2_SMBDEFAULT 5 /* SMBus device default address (Slave mode)  */
+#define I2C_SR2_SMBHOST 6	 /* SMBus host reader (Slave mode) */
+#define I2C_SR2_DUALF 7		 /* Dual flag (Slave mode) */
+#define I2C_SR2_PEC 8		 /* Package error checking register */
+
+/* Bit position definition I2C_CCR */
+
+#define I2C_CCR_CCR 0	/* Clock control register in Fm/Sm mode (Master mode) */
+#define I2C_CCR_DUTY 14 /* Fm mode duty cycle */
+#define I2C_CCR_FS 15	/* I2C master mode selection (11:0 bits) */
 
 /********************************************* Peripheral clock enable/disable macros ***********************************************
  * 											 For register addresses check referance manual											*
@@ -473,6 +561,29 @@ typedef struct
 		(RCC->APB2RSTR &= (1 << 13)); \
 	} while (0)
 
+/************** I2Cx reset peripherals macros **************/
+
+#define I2C1_REG_RESET()              \
+	do                                \
+	{                                 \
+		(RCC->APB1RSTR |= (1 << 21)); \
+		(RCC->APB1RSTR &= (1 << 21)); \
+	} while (0)
+
+#define I2C2_REG_RESET()              \
+	do                                \
+	{                                 \
+		(RCC->APB1RSTR |= (1 << 22)); \
+		(RCC->APB1RSTR &= (1 << 22)); \
+	} while (0)
+
+#define I2C3_REG_RESET()              \
+	do                                \
+	{                                 \
+		(RCC->APB1RSTR |= (1 << 23)); \
+		(RCC->APB1RSTR &= (1 << 23)); \
+	} while (0)
+
 #define GPIO_BASEADDR_TO_CODE(GPIOx) ((GPIOx == GPIOA) ? 0 : (GPIOx == GPIOB) ? 1 \
 														 : (GPIOx == GPIOC)	  ? 2 \
 														 : (GPIOx == GPIOD)	  ? 3 \
@@ -484,5 +595,6 @@ typedef struct
 
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
+#include "stm32f407xx_i2c_driver.h"
 
 #endif /* INC_STM32F407XX_H_ */

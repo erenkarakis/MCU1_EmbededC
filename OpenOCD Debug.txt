@@ -1,0 +1,4 @@
+Linker -> -specs=rdimon.specs -lc -lrdimon
+Debug Config.
+Debug Probe -> STLink OpenOCD
+In startup section bottom of the page -> monitor arm semihosting enable
